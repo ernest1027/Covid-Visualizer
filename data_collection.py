@@ -7,46 +7,57 @@ raw_json = json.loads(response.text)
 
 
 def state_index():
-    """Assigns a number to each state (alphabetical order by state code)"""
-    dict = {}
+    """
+    Assigns a number to each state (alphabetical order by state code)
+    :return: dictionary of state indexes and their corresponding code
+    """
+    s_index = {}
     count = 0
     for item in raw_json:
-        dict[count] = item
+        s_index[count] = item
         count += 1
 
-    return dict
+    return s_index
 
 
-def confirmed_cases(days_ago=0, index='All'):
+def cases(case_type, time_frame='delta', days_ago=0, index='All'):
+    """
+    gets number of cases
+    :param case_type: confirmed, recovered, deceased
+    :param time_frame: delta for selected day, delta7 for last 7 days, total for cumulative
+    :param days_ago: data from x number of days ago
+    :param index: specify province (int, str)
+    :return: dictionary of province(s) and cas count(s)
+    """
     date = datetime.datetime.now() - datetime.timedelta(days=days_ago)
     date = date.strftime("%Y-%m-%d")
     results = {}
-    print(type(index))
 
     if index == 'All':
         for key, values in raw_json.items():
-            if key == 'UN':
-                pass
-            else:
-                try:
-                    results[key] = values['dates'][date]['delta']['confirmed']
-                except KeyError:
-                    results[key] = 'n/a'
+            try:
+                results[key] = values['dates'][date][time_frame][case_type]
+            except KeyError:
+                results[key] = 'n/a'
+                return results
 
         return results
 
-    elif type(index) == str:
-        results[index] = raw_json[index]['dates'][date]['delta']['confirmed']
-        return results
+    else:
+        if type(index) == str:
+            pass
+        elif type(index) == int:
+            index = state_index()[index]
 
-    elif type(index) == int:
-        results[state_index()[index]] = raw_json[state_index()[index]]['dates'][date]['delta']['confirmed']
-        return results
+        try:
+            results[index] = raw_json[index]['dates'][date][time_frame][case_type]
+            return results
+        except KeyError:
+            results[index] = 'n/a'
+            return results
 
 
 if __name__ == '__main__':
-    print(confirmed_cases(index=0))
-    print(state_index()[6])
-
+    print(cases('confirmed', time_frame='delta7', index=1))
 
 # print(type(raw_json['AN']['dates']['2020-03-26']['delta']['confirmed']))
