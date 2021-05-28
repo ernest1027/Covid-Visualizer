@@ -59,5 +59,3 @@ def cases(case_type, time_frame='delta', days_ago=0, index='All'):
 
 if __name__ == '__main__':
     print(cases('confirmed', time_frame='delta7', index=1))
-
-# print(type(raw_json['AN']['dates']['2020-03-26']['delta']['confirmed']))
