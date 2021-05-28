@@ -23,7 +23,7 @@ def state_index():
 def case_day(case_type, time_frame='delta', days_ago=0, index='All'):
     """
     gets number of case on a given day
-    :param case_type: confirmed, recovered, deceased
+    :param case_type: confirmed, recovered, deceased, vaccinated
     :param time_frame: delta for selected day, delta7 for last 7 days, total for cumulative
     :param days_ago: data from x number of days ago
     :param index: specify province (int, str)
@@ -60,7 +60,7 @@ def case_day(case_type, time_frame='delta', days_ago=0, index='All'):
 def cases_list(case_type, length, index='All'):
     """
     gets list of historical data
-    :param case_type: confirmed, recovered, deceased
+    :param case_type: confirmed, recovered, deceased, vaccinated
     :param length: quantity of historical data (days)
     :param index: specify province (int, str)
     :return: dictionary with state code and list of case numbers
@@ -93,7 +93,35 @@ def cases_list(case_type, length, index='All'):
         results[index] = cases[-length:]
         return results
 
+def get_dsdt():
+    total_pop = 49390000
+    avg = 0
+    for i in range(0,14):
+        R_1 = case_day('recovered', time_frame='total', days_ago=i+1)['AP']
+        R = case_day('recovered', time_frame='total', days_ago=i)['AP']
+        D_1 = case_day('deceased', time_frame='total', days_ago=i+1)['AP']
+        D = case_day('deceased', time_frame='total', days_ago=i)['AP']
+        I_1 = case_day('confirmed', time_frame='total', days_ago=i+1)['AP']
+        I = case_day('confirmed', time_frame='total', days_ago=i)['AP']
+        V_1 = case_day('vaccinated', time_frame='total', days_ago=i+1)['AP']
+        V = case_day('vaccinated', time_frame='total', days_ago=i)['AP']
+
+        S_1 = total_pop-I_1-D_1-R_1-V_1
+        S = total_pop-I-D-R-V
+
+        beta = S-S_1
+        print(beta)
+        beta += V-V_1
+        print(beta)
+        beta *=total_pop
+        print(beta)
+        beta /= (S_1*I_1)
+        print(beta)
+        avg -= beta
+        print(i,avg)
+    return avg/14
 
 if __name__ == '__main__':
     # print(case_day('confirmed', time_frame='delta7', index=1))
-    print(cases_list('recovered', 5, 'AP'))
+    # print(cases_list('recovered', 5, 'AP'))
+    print(get_dsdt())
