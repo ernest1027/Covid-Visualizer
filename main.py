@@ -26,11 +26,7 @@ def deriv(state, t, N, beta, gamma, delta, alpha, sigma):
     dDdt = gamma * I * delta
     return dSdt, dIdt, dRdt, dDdt
 
-# data_collection.high_priority #returns infection rate per capita given a location and day
-
-# data_collection.high_priority #returns top 5 infection rates make sure those states have people to vaccinate
-
-# data_collection.high_priority #returns true if a state is in top 5 infections
+# data_collection.high_priority #make sure those states have people to vaccinate
 
 #returns data for a given day
 
