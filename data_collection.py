@@ -138,17 +138,17 @@ def get_delta(location):
     return SIDRV['deceased']/(SIDRV['deceased']+SIDRV['recovered'])
 
 
-def high_priority(location):
+def high_priority():
     high_p = {}
     for item in raw_json:
         if pop[item] != 'n/a':
             high_p[item] = get_beta(item)
-            print(item, high_p[item])
 
     return sorted(high_p, key=high_p.get, reverse=True)
 
 
 if __name__ == '__main__':
-    # get_SIDRV(0, 'UP')
-    print(high_priority('AP'))
+    print(get_SIDRV(0, 'WB'))
+
+
 

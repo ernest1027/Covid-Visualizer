@@ -9,12 +9,12 @@ for line in lines:
     
     words = line.split()
     print(words)
-    tmp = 0
+    tmp = 1
     state = ""
     while "(" not in words[tmp]:
         state += words[tmp] + " "
         tmp += 1
-    states[state] = {"name":state, "lat": float(words[tmp+1]), "lon": float(words[tmp+2])}
+    states[words[0]] = {"name":state, "lat": float(words[tmp+1]), "lon": float(words[tmp+2])}
 print(states)
 
 with open("india_states.json", "w") as outfile: 

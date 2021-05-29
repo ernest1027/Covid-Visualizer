@@ -3,82 +3,94 @@ import numpy as np
 from scipy.integrate import odeint
 import plotly.express as px
 from data_collection import *
-
+from flask import Flask, request
+from flask_cors import CORS
 #beta = effective_contact_rate
 #delta = death_rate
 #alpha = vaccination_rate
 #gamma = recovery_rate
 #sigma = vaccination_effectiveness_rate
-def deriv(state, t, N, beta, gamma, delta, alpha, sigma):
-    S = state[0]
-    I = state[1]
-    R = state[2]
-    D = state[3]
-    #if the state is a top 5 infection rate then increase its alpha
-    if(S<0):
-        alpha = 0
+
+
+app = Flask(__name__)
+CORS(app)
+
+
+def deriv(state, N, location_variables, alpha):
+    S = state["susceptible"]
+    I = state["infected"]
+    R = state["recovered"]
+    D = state["dead"]
+
+    beta = location_variables["beta"]
+    delta = location_variables["delta"]
+    gamma = 1/3.5
+    sigma = 0.95
+    
     dSdt = ((-beta * S * I / N) - alpha) 
     dIdt = (beta * S * I / N - (gamma * I) +  (R*sigma*beta*I/N)) 
     dRdt = gamma * I * (1-delta) - (R*sigma*beta*I/N) +alpha
-    # dSdt = ((-beta * S * I / N) - alpha) if S + (-beta * S * I / N) - alpha  > 0.01 else 0
-    # dIdt = (beta * S * I / N - (gamma * I) +  (R*sigma*beta*I/N))  if I + (beta * S * I / N - (gamma * I) +  (R*sigma*beta*I/N))  > .010 else 0
-    # dRdt = gamma * I * (1-delta) - (R*sigma*beta*I/N) + (alpha if S + (-beta * S * I / N) - alpha > 0.01 else 0) 
     dDdt = gamma * I * delta
-    return dSdt, dIdt, dRdt, dDdt
+    return [int(dSdt), int(dIdt), int(dRdt), int(dDdt)]
+
 
 # data_collection.high_priority #make sure those states have people to vaccinate
-def calc_all():
-    for location in high_priority():
-        total_pop = pop[location]
-        SIDRV = get_SIDRV(0, location)
-        infected = SIDRV['a']['confirmed']
-        recovered = SIDRV['a']['recovered'] + SIDRV['a']['vaccinated']
-        susceptible = SIDRV['a']['susceptible']
-        dead = SIDRV['a']['deceased']
-        deriv()
-#returns data for a given day
+@app.route('/calc', methods=['GET'])
+def calc_route():
+    total_vaccine_per_day = int(request.args.get('vaccine'))
+    days= int(request.args.get('days'))
+    return calc_all(total_vaccine_per_day,days),200
 
-location = input('enter location:')
-total_pop = pop[location]
-SIDRV = get_SIDRV(0, location)
-infected = SIDRV['a']['confirmed']
-recovered = SIDRV['a']['recovered'] + SIDRV['a']['vaccinated']
-susceptible = SIDRV['a']['susceptible']
-dead = SIDRV['a']['deceased']
-print(total_pop, susceptible, infected, recovered, dead)
+def calc_all(total_vaccine_per_day, days):
 
+    location_data = {}
+    location_variables = {}
+    ordered = high_priority()
+    for i in range(days):
+        total_vaccine_left = total_vaccine_per_day
+        location_data[i] = {}
+        ordered_1 = {}
+        for location in ordered:
+            
+            location_data[i][location] = {}
+            if i == 0:
+                location_variables[location] = {}
+                SIDRV = get_SIDRV(0, location)              
+                location_data[i][location]["infected"] = SIDRV['a']['confirmed']
+                ordered_1[location] = location_data[i][location]["infected"]
+                location_data[i][location]["recovered"] = SIDRV['a']['recovered'] + SIDRV['a']['vaccinated']
+                location_data[i][location]["susceptible"] = SIDRV['a']['susceptible']
+                location_data[i][location]["dead"] = SIDRV['a']['deceased']
+                location_variables[location]["beta"] = get_beta(location)
+                location_variables[location]["delta"] = get_delta(location)
+            else:
+                alpha = total_vaccine_per_day/5
+                if (alpha < (location_data[i-1][location]["susceptible"] - alpha)) and (alpha < total_vaccine_left): 
+                    total_vaccine_left -= alpha
+                elif (alpha < (location_data[i-1][location]["susceptible"] - alpha)) and (alpha > total_vaccine_left):
+                    alpha = total_vaccine_left
+                    total_vaccine_left -= alpha
+                else:
+                    alpha = 0       
+                location_data[i][location]['vaccinated'] = alpha
+                deriv_array = deriv(location_data[i-1][location], pop[location], location_variables[location], alpha)
+                location_data[i][location]["infected"] = location_data[i-1][location]["infected"] + deriv_array[1]
+                ordered_1[location] = location_data[i][location]["infected"]
+                location_data[i][location]["recovered"] = location_data[i-1][location]["recovered"] + deriv_array[2]
+                location_data[i][location]["susceptible"] = location_data[i-1][location]["susceptible"] + deriv_array[0] if location_data[i-1][location]["susceptible"] + deriv_array[0] >=0 else 0
+                location_data[i][location]["dead"] = location_data[i-1][location]["dead"] + deriv_array[3]
+        
+        # print(ordered_1)
+        ordered = sorted(ordered_1, key=ordered_1.get, reverse=True)
+        
+    #     print (ordered)
+    # print(location_data)
+    return location_data
 
-# transmission_rate = 0.05
-# contacts_per_day = 5
-# effective_contact_rate = transmission_rate*contacts_per_day
-effective_contact_rate = get_beta(location)
-death_rate = get_delta(location)
-recovery_rate = 1/3.5
-vaccination_rate = 10000000
-vaccination_effectiveness_rate = 0.95
-print(effective_contact_rate, death_rate)
-
-
-days = range(0,1600)
-
-ret = odeint(deriv,[susceptible,infected,recovered,dead],days,args=(total_pop,effective_contact_rate,recovery_rate,death_rate,vaccination_rate,vaccination_effectiveness_rate))
-S,I,R,D = ret.T
-
-#calculate data frame for each state
-def data_frame():
-
-    df = pd.DataFrame({
-        'susceptible': S,
-        'infected': I,
-        'recovered': R,
-        'dead' : D,
-        'day': days
-    })
-
-    return df
 
 if __name__ == '__main__':
-    df = data_frame()    
-    print(df)
-    fig = px.line(df, x="day", y="infected", title='Life expectancy in Canada')
-    fig.write_image("fig1.png")
+    app.run(host='0.0.0.0', port=5000)
+    # df = data_frame()    
+    # print(df)
+    # fig = px.line(df, x="day", y="infected", title='Life expectancy in Canada')
+    # fig.write_image("fig1.png")

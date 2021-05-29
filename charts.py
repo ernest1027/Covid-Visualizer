@@ -1,11 +1,19 @@
-from main import deriv, data_frame
+from main import calc_all
+from data_collection import cases_list
 import plotly.express as px
 import matplotlib.pyplot as plt
 
-print (data_frame())
+the_dict = calc_all(1000000, 21)
+master = {'days': [], 'count': []}
+for key, values in the_dict.items():
+        master['days'].append(key)
+        master['count'].append(values['DL']['infected'])
+print(type(the_dict))
 
-df = data_frame()
+fig = px.bar(master, x='days', y='count')
+fig.write_image('fig1.jpeg')
 
+"""
 plt.style.use('ggplot')
 df.plot(x='day',
         y= ['infected', 'susceptible', 'recovered'],
@@ -15,5 +23,6 @@ df.plot(x='day',
 
 df.plot.area()
 plt.savefig('fig1.png')
+"""
 
 #function to return graph for a given state
