@@ -93,7 +93,35 @@ def cases_list(case_type, length, index='All'):
         results[index] = cases[-length:]
         return results
 
-def get_dsdt():
+def get_beta():
+    total_pop = 49390000
+    avg = 0
+    for i in range(0,14):
+        R_1 = case_day('recovered', time_frame='total', days_ago=i+1)['AP']
+        R = case_day('recovered', time_frame='total', days_ago=i)['AP']
+        D_1 = case_day('deceased', time_frame='total', days_ago=i+1)['AP']
+        D = case_day('deceased', time_frame='total', days_ago=i)['AP']
+        I_1 = case_day('confirmed', time_frame='total', days_ago=i+1)['AP']
+        I = case_day('confirmed', time_frame='total', days_ago=i)['AP']
+        V_1 = case_day('vaccinated', time_frame='total', days_ago=i+1)['AP']
+        V = case_day('vaccinated', time_frame='total', days_ago=i)['AP']
+
+        S_1 = total_pop-I_1-D_1-R_1-V_1
+        S = total_pop-I-D-R-V
+
+        beta = S-S_1
+        print(beta)
+        beta += V-V_1
+        print(beta)
+        beta *=total_pop
+        print(beta)
+        beta /= (S_1*I_1)
+        print(beta)
+        avg -= beta
+        print(i,avg)
+    return avg/14
+
+def get_delta():
     total_pop = 49390000
     avg = 0
     for i in range(0,14):
@@ -124,4 +152,4 @@ def get_dsdt():
 if __name__ == '__main__':
     # print(case_day('confirmed', time_frame='delta7', index=1))
     # print(cases_list('recovered', 5, 'AP'))
-    print(get_dsdt())
+    print(get_beta())

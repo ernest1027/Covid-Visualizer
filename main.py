@@ -21,7 +21,6 @@ def deriv(state, t, N, beta, gamma, delta, alpha, sigma):
     dDdt = gamma * I * delta
     return dSdt, dIdt, dRdt, dDdt
 
-
 total_pop = 15000000
 recovered = 0
 infected = 1
@@ -56,4 +55,3 @@ def data_frame():
 
 if __name__ == '__main__':
     print(df)
-vc
