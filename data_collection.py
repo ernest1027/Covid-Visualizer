@@ -76,7 +76,7 @@ def cases_list(case_type, length, location='All'):
         for state in raw_json:
             for key in raw_json[state]['dates']:
                 try:
-                    cases.append(raw_json[state]['dates'][key]['delta'][case_type])
+                    cases.append(raw_json[state]['dates'][key]['total'][case_type])
                 except KeyError:
                     cases.append(0)
 
@@ -87,7 +87,7 @@ def cases_list(case_type, length, location='All'):
     else:
         for key in raw_json[location]['dates']:
             try:
-                cases.append(raw_json[location]['dates'][key]['delta'][case_type])
+                cases.append(raw_json[location]['dates'][key]['total'][case_type])
             except KeyError:
                 cases.append(0)
 
@@ -148,7 +148,7 @@ def high_priority():
 
 
 if __name__ == '__main__':
-    print(get_SIDRV(0, 'WB'))
+    print(get_beta('DL'))
 
 
 

@@ -24,7 +24,7 @@ def deriv(state, N, location_variables, alpha):
 
     beta = location_variables["beta"]
     delta = location_variables["delta"]
-    gamma = 1/3.5
+    gamma = 1/2
     sigma = 0.95
     
     dSdt = ((-beta * S * I / N) - alpha) 
@@ -89,7 +89,9 @@ def calc_all(total_vaccine_per_day, days):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # app.run(host='0.0.0.0', port=5000)
+    for i in range(21):
+        print(calc_all(1000000, 21)[i]['DL'])
     # df = data_frame()    
     # print(df)
     # fig = px.line(df, x="day", y="infected", title='Life expectancy in Canada')
