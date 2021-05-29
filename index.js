@@ -43,17 +43,13 @@ const locations = {
 let data = {};
 
 function initMap() {
-  const map = new google.maps.Map(document.getElementById("map"), {
+  map = new google.maps.Map(document.getElementById("map"), {
     zoom: 5,
     center: { lat: 20.59, lng: 78.9 },
   });
 }
 
 function setMarkers() {
-  const map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 5,
-    center: { lat: 20.59, lng: 78.9 },
-  });
   const infoWindow = new google.maps.InfoWindow();
   // Create the markers.
   Object.keys(locations).forEach((state, i) => {
@@ -67,61 +63,92 @@ function setMarkers() {
       optimized: false,
     });
     // Add a click listener for each marker, and set up the info window.
+    google.maps.event.addListener(infoWindow, "closeclick", function () {
+      if (
+        document.getElementById("stateContent").innerHTML !=
+        '<div id="chart" class="chart"></div> '
+      ) {
+        setHeatMap(document.getElementById("myRange").value);
+      }
+      document.getElementById("stateContent").innerHTML =
+        '<div id="chart" class="chart"></div> ';
+    });
     marker.addListener("click", () => {
       infoWindow.close();
       infoWindow.setContent(marker.getTitle());
       infoWindow.open(marker.getMap(), marker);
-      //get stats of state at given time
-      //display graph from python
 
-      document.getElementById("stateContent").innerHTML = marker.getTitle();
+      
+      document.getElementById("totalContent").innerHTML = "";
+      axios.get("https://v-map-hackon.herokuapp.com/chart").then((data) => {
+        console.log(data.data);
+        var graphs = data.data;
+        Plotly.plot("chart", graphs, {});
+      });
+      let e = document.getElementById("myRange").value
+      document.getElementById("stateContent").innerHTML =(`
+      <h2>${marker.getTitle()}</h2>
+      <p>Susceptible: ${data[e][state]["susceptible"]}</p>
+      <p>Infected: ${data[e][state]["infected"]}</p>
+      <p>Recovered: ${data[e][state]["recovered"]}</p>
+      <p>Dead: ${data[e][state]["dead"]}</p>
+      <div id="chart" class="chart"></div>
+      
+      `);
     });
   });
 }
 
 function setHeatMap(e) {
+  document.getElementById("stateContent").innerHTML = '<div id="chart" class="chart"></div> ';
   let heatmapData = [];
-  Object.keys(locations).forEach((state, i) => {
-    heatmapData.push(
-      {
-        location: new google.maps.LatLng(locations[state].lat, locations[state].lon),
-        weight: data[e][state]["infected"]
-      }
-    )
-  });
+  let content = `
+    <table class="table table-sm">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">State</th>
+          <th scope="col">Susceptible</th>
+          <th scope="col">Infected</th>
+          <th scope="col">Recovered</th>
+          <th scope="col">Vaccinated</th>
+          <th scope="col">Dead</th>
+          <td>
+        </tr>
+      </thead>
+      <tbody>
+    
   
-  const map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 5,
-    center: { lat: 20.59, lng: 78.9 },
-  });
-  const infoWindow = new google.maps.InfoWindow();
-  // Create the markers.
+  
+  `;
   Object.keys(locations).forEach((state, i) => {
-    let position = { lat: locations[state].lat, lng: locations[state].lon };
-    let title = locations[state].name;
-    const marker = new google.maps.Marker({
-      position,
-      map,
-      title: `${title}`,
-      label: state,
-      optimized: false,
+    heatmapData.push({
+      location: new google.maps.LatLng(
+        locations[state].lat,
+        locations[state].lon
+      ),
+      weight: data[e][state]["infected"],
+      // weight: (data[e][state]["infected"]/(data[e][state]["infected"]+data[e][state]["recovered"]+data[e][state]["susceptible"]))*1000
     });
-    // Add a click listener for each marker, and set up the info window.
-    marker.addListener("click", () => {
-      infoWindow.close();
-      infoWindow.setContent(marker.getTitle());
-      infoWindow.open(marker.getMap(), marker);
-      //get stats of state at given time
-      //display graph from python
-
-      document.getElementById("stateContent").innerHTML = marker.getTitle();
-    });
+    content += `
+    <tr>
+      <th scope="row">${locations[state].name}</th>
+      <td>${data[e][state]["susceptible"]}</td>
+      <td>${data[e][state]["infected"]}</td>
+      <td>${data[e][state]["recovered"]}</td>
+      <td>${data[e][state]["vaccinated"]}</td>
+      <td>${data[e][state]["dead"]}</td>
+    
+  </tr>
+    
+    `;
   });
-  console.log(heatmapData)
+  content += " </tbody></table>"
   let heatmap = new google.maps.visualization.HeatmapLayer({
-    data: heatmapData
-  })
+    data: heatmapData,
+  });
+  heatmap.setOptions({ radius: "30" });
   heatmap.setMap(map);
+  document.getElementById("totalContent").innerHTML = content;
 }
 
 document
@@ -136,7 +163,7 @@ function vaccineSubmit(e) {
     //get data from python
     axios
       .get(
-        `http://localhost:5000/calc?vaccine=${
+        `https://v-map-hackon.herokuapp.com/calc?vaccine=${
           document.getElementById("vaccines").value
         }&days=500`
       )
@@ -144,12 +171,16 @@ function vaccineSubmit(e) {
         data = response.data;
         console.log(data);
         setMarkers();
+        setHeatMap(0);
       });
     //Make slider
     document.getElementById("content").innerHTML = `
-       <input type="range" min="0" max="500" value="50" class="slider" id="myRange" oninput="setHeatMap(this.value)">
-       <div id = totalContent> <div>
-       <div id=stateContent> <div>       
+       <input type="range" min="0" max="499" value="0" class="form-range" id="myRange" onchange="setHeatMap(this.value)">
+       <div id=stateContent>
+        <div id="chart" class="chart"></div>     
+       </div> 
+       <div id = totalContent> </div>
+             
        `;
   }
 }

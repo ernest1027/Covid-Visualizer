@@ -1,0 +1,8 @@
+Flask
+Plotly
+Pandas
+Numpy
+Json
+Flask-cors
+requests
+date-time
