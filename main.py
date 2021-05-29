@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy.integrate import odeint
 import plotly.express as px
-import data_collection
+from data_collection import *
 
 #beta = effective_contact_rate
 #delta = death_rate
@@ -26,17 +26,21 @@ def deriv(state, t, N, beta, gamma, delta, alpha, sigma):
     dDdt = gamma * I * delta
     return dSdt, dIdt, dRdt, dDdt
 
-#returns infection rate per capita given a location and day
-
-#returns top 5 infection rates make sure those states have people to vaccinate
-
-#returns true if a state is in top 5 infections
-
+# data_collection.high_priority #make sure those states have people to vaccinate
+def calc_all():
+    for location in high_priority():
+        total_pop = pop[location]
+        SIDRV = get_SIDRV(0, location)
+        infected = SIDRV['a']['confirmed']
+        recovered = SIDRV['a']['recovered'] + SIDRV['a']['vaccinated']
+        susceptible = SIDRV['a']['susceptible']
+        dead = SIDRV['a']['deceased']
+        deriv()
 #returns data for a given day
 
 location = input('enter location:')
-total_pop = data_collection.pop[location]
-SIDRV = data_collection.get_SIDRV(0, location)
+total_pop = pop[location]
+SIDRV = get_SIDRV(0, location)
 infected = SIDRV['a']['confirmed']
 recovered = SIDRV['a']['recovered'] + SIDRV['a']['vaccinated']
 susceptible = SIDRV['a']['susceptible']
@@ -47,8 +51,8 @@ print(total_pop, susceptible, infected, recovered, dead)
 # transmission_rate = 0.05
 # contacts_per_day = 5
 # effective_contact_rate = transmission_rate*contacts_per_day
-effective_contact_rate = data_collection.get_beta(location)
-death_rate = data_collection.get_delta(location)
+effective_contact_rate = get_beta(location)
+death_rate = get_delta(location)
 recovery_rate = 1/3.5
 vaccination_rate = 10000000
 vaccination_effectiveness_rate = 0.95
