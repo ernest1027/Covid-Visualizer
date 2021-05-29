@@ -143,12 +143,9 @@ def high_priority(location):
     for item in raw_json:
         if pop[item] != 'n/a':
             high_p[item] = get_beta(item)
+            print(item, high_p[item])
 
-    top5 = sorted(high_p, key=high_p.get, reverse=True)[:5]
-    if location in top5:
-        return True
-
-    return False
+    return sorted(high_p, key=high_p.get, reverse=True)
 
 
 if __name__ == '__main__':
