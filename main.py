@@ -9,20 +9,32 @@ import data_collection
 #alpha = vaccination_rate
 #gamma = recovery_rate
 #sigma = vaccination_effectiveness_rate
-def deriv(state, t,N, beta, gamma, delta, alpha, sigma):
+def deriv(state, t, N, beta, gamma, delta, alpha, sigma):
     S = state[0]
     I = state[1]
     R = state[2]
     D = state[3]
+    #if the state is a top 5 infection rate then increase its alpha
     if(S<0):
         alpha = 0
-    dSdt = (-beta * S * I / N) - alpha  if S + (-beta * S * I / N) - alpha  > 0 else 0
-    dIdt = beta * S * I / N - (gamma * I) +  (R*sigma*beta*I/N)
-    dRdt = gamma * I * (1-delta) + alpha  - (R*sigma*beta*I/N)
+    dSdt = ((-beta * S * I / N) - alpha) 
+    dIdt = (beta * S * I / N - (gamma * I) +  (R*sigma*beta*I/N)) 
+    dRdt = gamma * I * (1-delta) - (R*sigma*beta*I/N) +alpha
+    # dSdt = ((-beta * S * I / N) - alpha) if S + (-beta * S * I / N) - alpha  > 0.01 else 0
+    # dIdt = (beta * S * I / N - (gamma * I) +  (R*sigma*beta*I/N))  if I + (beta * S * I / N - (gamma * I) +  (R*sigma*beta*I/N))  > .010 else 0
+    # dRdt = gamma * I * (1-delta) - (R*sigma*beta*I/N) + (alpha if S + (-beta * S * I / N) - alpha > 0.01 else 0) 
     dDdt = gamma * I * delta
     return dSdt, dIdt, dRdt, dDdt
 
-location = 'AP'
+#returns infection rate per capita given a location and day
+
+#returns top 5 infection rates make sure those states have people to vaccinate
+
+#returns true if a state is in top 5 infections
+
+#returns data for a given day
+
+location = input('enter location:')
 total_pop = data_collection.pop[location]
 SIDRV = data_collection.get_SIDRV(0, location)
 infected = SIDRV['a']['confirmed']
@@ -37,17 +49,18 @@ print(total_pop, susceptible, infected, recovered, dead)
 # effective_contact_rate = transmission_rate*contacts_per_day
 effective_contact_rate = data_collection.get_beta(location)
 death_rate = data_collection.get_delta(location)
-recovery_rate = 1/14
-vaccination_rate = 1000000
+recovery_rate = 1/3.5
+vaccination_rate = 10000000
 vaccination_effectiveness_rate = 0.95
 print(effective_contact_rate, death_rate)
 
 
-days = range(0,160)
+days = range(0,1600)
 
 ret = odeint(deriv,[susceptible,infected,recovered,dead],days,args=(total_pop,effective_contact_rate,recovery_rate,death_rate,vaccination_rate,vaccination_effectiveness_rate))
 S,I,R,D = ret.T
 
+#calculate data frame for each state
 def data_frame():
 
     df = pd.DataFrame({

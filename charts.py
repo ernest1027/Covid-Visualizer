@@ -14,3 +14,6 @@ df.plot(x='day',
         stacked= True)
 
 df.plot.area()
+plt.savefig('fig1.png')
+
+#function to return graph for a given state
