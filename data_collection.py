@@ -95,80 +95,44 @@ def cases_list(case_type, length, index='All'):
         results[index] = cases[-length:]
         return results
 
+def get_SIDRV(day, location):
+    counts = {'a': {}, 'b': {}}
+    counts['a']['susceptible'] =  pop[location]
+    counts['b']['susceptible'] =  pop[location]
+    for case_type in ['recovered', 'deceased', 'confirmed', 'vaccinated']:
+        counts['a'][case_type] = case_day(case_type, time_frame='total', days_ago=day)[location]
+        counts['b'][case_type] = case_day(case_type, time_frame='total', days_ago=day+1)[location]
+        counts['a']['susceptible'] -= counts['a'][case_type]  
+        counts['b']['susceptible'] -= counts['b'][case_type]  
+    counts['a']['confirmed'] -= counts['a']['recovered'] + counts['a']['deceased']
+    counts['b']['confirmed'] -= counts['b']['recovered'] + counts['b']['deceased']
+    return counts
+    
+def get_vaccinated(location):
+    return case_day("vaccinated", time_frame='total')[location]
 
-def get_beta():
+def get_beta(location):
     avg = 0
-    counts = {'d': {}, 'd_1': {}}
-    for i in range(14):
-        for case_type in ['recovered', 'deceased', 'confirmed', 'vaccinated']:
-            counts['d'][case_type] += case_day(case_type, time_frame='total', days_ago=i)['AP']
-            counts['d_1'][case_type] += case_day(case_type, time_frame='total', days_ago=i+1)['AP']
-        print(counts['d'])
 
-        beta = counts['rm-d'] - counts['rm']
-        beta += counts['vaccinated'] - counts['vaccinated-d']
-        beta *= pop['AP']
-        beta /= pop['AP']
+    for i in range(14):       
 
-        print(susceptible)
+        SIDRV = get_SIDRV(i, location)
 
 
-    for i in range(0,14):
-        R_1 = case_day('recovered', time_frame='total', days_ago=i+1)['AP']
-        R = case_day('recovered', time_frame='total', days_ago=i)['AP']
-        D_1 = case_day('deceased', time_frame='total', days_ago=i+1)['AP']
-        D = case_day('deceased', time_frame='total', days_ago=i)['AP']
-        I_1 = case_day('confirmed', time_frame='total', days_ago=i+1)['AP']
-        I = case_day('confirmed', time_frame='total', days_ago=i)['AP']
-        V_1 = case_day('vaccinated', time_frame='total', days_ago=i+1)['AP']
-        V = case_day('vaccinated', time_frame='total', days_ago=i)['AP']
-
-        S_1 = total_pop-I_1-D_1-R_1-V_1
-        S = total_pop-I-D-R-V
-
-        beta = S-S_1
+        beta = SIDRV['a']['susceptible'] - SIDRV['b']['susceptible']
+        beta += SIDRV['a']['vaccinated'] - SIDRV['b']['vaccinated']
+        beta *= pop[location]        
+        beta /= (SIDRV['b']['susceptible']*SIDRV['b']['confirmed'])
         # print(beta)
-        beta += V-V_1
-        # print(beta)
-        beta *= total_pop
-        # print(beta)
-        beta /= (S_1*I_1)
-        # print(beta)
-        avg -= beta
-        # print(i, avg)
+        avg -= beta        
     return avg/14
 
 
-def get_delta():
-    total_pop = raw_population["AP"]
-    avg = 0
-    for i in range(0,14):
-        R_1 = case_day('recovered', time_frame='total', days_ago=i+1)['AP']
-        R = case_day('recovered', time_frame='total', days_ago=i)['AP']
-        D_1 = case_day('deceased', time_frame='total', days_ago=i+1)['AP']
-        D = case_day('deceased', time_frame='total', days_ago=i)['AP']
-        I_1 = case_day('confirmed', time_frame='total', days_ago=i+1)['AP']
-        I = case_day('confirmed', time_frame='total', days_ago=i)['AP']
-        V_1 = case_day('vaccinated', time_frame='total', days_ago=i+1)['AP']
-        V = case_day('vaccinated', time_frame='total', days_ago=i)['AP']
-
-        S_1 = total_pop - I_1 - D_1 - R_1 - V_1
-        S = total_pop - I - D - R - V
-
-        beta = S-S_1
-        # print(beta)
-        beta += V-V_1
-        # print(beta)
-        beta *= total_pop
-        # print(beta)
-        beta /= (S_1*I_1)
-        # print(beta)
-        avg -= beta
-        # print(i, avg)
-    return avg/14
-
+def get_delta(location):
+    SIDRV = get_SIDRV(0, location)['a']
+    # print(SIDRV)
+    return SIDRV['deceased']/(SIDRV['deceased']+SIDRV['recovered'])
 
 if __name__ == '__main__':
-    # print(case_day('confirmed', time_frame='delta7', index=1))
-    # print(cases_list('recovered', 5, 'AP'))
-    print(get_beta())
+    print(get_beta('AP'))
+    print(get_delta('AP'))

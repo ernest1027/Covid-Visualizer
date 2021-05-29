@@ -1,7 +1,16 @@
 from main import deriv, data_frame
 import plotly.express as px
+import matplotlib.pyplot as plt
 
+print (data_frame())
 
-df = px.data.gapminder().query("country=='Canada'")
-fig = px.line(df, x="year", y="lifeExp", title='Life expectancy in Canada')
-fig.write_image("fig1.png")
+df = data_frame()
+
+plt.style.use('ggplot')
+df.plot(x='day',
+        y= ['infected', 'susceptible', 'recovered'],
+        color=['#aa6424', '#bbc6ca', '#cc8ac0'],
+        kind='area',
+        stacked= True)
+
+df.plot.area()
