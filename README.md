@@ -1,7 +1,7 @@
 # V-MAP
 
 ### ⚡ What is it?
-V-MAP is a full-stack web application which models and graphs the spread of COVID-19 in order to determine an optimal vaccination plan. Users can specify a number of available vaccines per day, which will be distributed by the algorithm to high-priority regions in the most effective mannar.
+V-MAP is a full-stack web application which models and graphs the spread of COVID-19 in order to determine an optimal vaccination plan. Users can specify a number of available vaccines per day, which will be distributed by the algorithm to high-priority regions in the most effective manner.
 
 ### ⚡ Why is it relevant? 
 V-MAP combats virus and vaccine related misinformation and provides the tools necessary to create an effective plan for vaccine rollout. By targeting the general public, it eases social, ethical, and political unrest amidst the critical state of India's healthcare system.
