@@ -194,8 +194,9 @@ function vaccineSubmit(e) {
       });
     //Make slider
     document.getElementById("content").innerHTML = `
-        <label for="myRange" id="myRangeValue">Prediction for 0 days in the future</label>
-       <input type="range" min="0" max="89" value="0" class="form-range" id="myRange" oninput="changeRange(this.value)" onchange="setHeatMap(this.value)">
+      <button onClick="window.location.reload();" class="btn btn-secondary">Restart</button>
+        <label for="myRange" id="myRangeValue">Prediction for 60 days in the future</label>
+       <input type="range" min="0" max="89" value="60" class="form-range" id="myRange" oninput="changeRange(this.value)" onchange="setHeatMap(this.value)">
        <div id=stateContent>
         <div id="chart" class="chart"></div>     
        </div> 
