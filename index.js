@@ -83,7 +83,7 @@ function setMarkers() {
       <p>Infected: ${data[e][state]["infected"]}</p>
       <p>Recovered: ${data[e][state]["recovered"]}</p>
       <p>Dead: ${data[e][state]["dead"]}</p>
-      <button class="btn btn-light" onclick="goBack()">Go Back</button>
+      <button class="btn btn-secondary" onclick="goBack()">Go Back</button>
       <br></br>
       <div id="chart" class="chart"></div>
       
@@ -119,7 +119,7 @@ function setHeatMap(e) {
   document.getElementById("stateContent").innerHTML = '<div id="chart" class="chart"></div> ';
   let heatmapData = [];
   let content = `
-  <button class ="btn btn-light" id="showStats" onclick="showstatstable()">Show stats table</button>
+  <button class ="btn btn-secondary" id="showStats" onclick="showstatstable()">Show stats table</button>
   <br></br>
     <table id="statstable" class="table table-sm hidden">
       <thead class="thead-dark">
