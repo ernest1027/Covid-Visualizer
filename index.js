@@ -1,6 +1,6 @@
 let map;
 let service;
-let infowindow;
+let infoWindow;
 var initLoc;
 const locations = {
   AN: { name: "Andaman And Nicobar ", lat: 11.66702557, lon: 92.73598262 },
@@ -50,7 +50,7 @@ function initMap() {
 }
 
 function setMarkers() {
-  const infoWindow = new google.maps.InfoWindow();
+  infoWindow = new google.maps.InfoWindow();
   // Create the markers.
   Object.keys(locations).forEach((state, i) => {
     let position = { lat: locations[state].lat, lng: locations[state].lon };
@@ -63,16 +63,7 @@ function setMarkers() {
       optimized: false,
     });
     // Add a click listener for each marker, and set up the info window.
-    google.maps.event.addListener(infoWindow, "closeclick", function () {
-      if (
-        document.getElementById("stateContent").innerHTML !=
-        '<div id="chart" class="chart"></div> '
-      ) {
-        setHeatMap(document.getElementById("myRange").value);
-      }
-      document.getElementById("stateContent").innerHTML =
-        '<div id="chart" class="chart"></div> ';
-    });
+    google.maps.event.addListener(infoWindow, "closeclick", goBack);
     marker.addListener("click", () => {
       infoWindow.close();
       infoWindow.setContent(marker.getTitle());
@@ -92,18 +83,45 @@ function setMarkers() {
       <p>Infected: ${data[e][state]["infected"]}</p>
       <p>Recovered: ${data[e][state]["recovered"]}</p>
       <p>Dead: ${data[e][state]["dead"]}</p>
+      <button class="btn btn-light" onclick="goBack()">Go Back</button>
+      <br></br>
       <div id="chart" class="chart"></div>
       
       `);
     });
   });
 }
+function showstatstable(){
+  document.getElementById("statstable").classList.toggle("hidden");
+  if(document.getElementById("showStats").innerHTML == "Hide stats table")
+  {
+    document.getElementById("showStats").innerHTML = "Show stats table"
+  }
+  else{
+    document.getElementById("showStats").innerHTML = "Hide stats table"
+  }
+  
+}
+
+function goBack() {
+  if (
+    document.getElementById("stateContent").innerHTML !=
+    '<div id="chart" class="chart"></div> '
+  ) {
+    setHeatMap(document.getElementById("myRange").value);
+  }
+  document.getElementById("stateContent").innerHTML =
+    '<div id="chart" class="chart"></div> ';
+};
 
 function setHeatMap(e) {
+  infoWindow.close()
   document.getElementById("stateContent").innerHTML = '<div id="chart" class="chart"></div> ';
   let heatmapData = [];
   let content = `
-    <table class="table table-sm">
+  <button class ="btn btn-light" id="showStats" onclick="showstatstable()">Show stats table</button>
+  <br></br>
+    <table id="statstable" class="table table-sm hidden">
       <thead class="thead-dark">
         <tr>
           <th scope="col">State</th>
@@ -135,7 +153,7 @@ function setHeatMap(e) {
       <td>${data[e][state]["susceptible"]}</td>
       <td>${data[e][state]["infected"]}</td>
       <td>${data[e][state]["recovered"]}</td>
-      <td>${data[e][state]["vaccinated"]}</td>
+      <td>${Math.floor(data[e][state]["vaccinated"])}</td>
       <td>${data[e][state]["dead"]}</td>
     
   </tr>
@@ -175,7 +193,8 @@ function vaccineSubmit(e) {
       });
     //Make slider
     document.getElementById("content").innerHTML = `
-       <input type="range" min="0" max="499" value="0" class="form-range" id="myRange" onchange="setHeatMap(this.value)">
+        <label for="myRange" id="myRangeValue">Prediction for 0 days in the future</label>
+       <input type="range" min="0" max="499" value="0" class="form-range" id="myRange" oninput="changeRange(this.value)" onchange="setHeatMap(this.value)">
        <div id=stateContent>
         <div id="chart" class="chart"></div>     
        </div> 
@@ -183,4 +202,9 @@ function vaccineSubmit(e) {
              
        `;
   }
+}
+
+function changeRange(e){
+  console.log(e)
+  document.getElementById("myRangeValue").innerHTML = `Time Elapsed (in Days) ${e}`
 }
