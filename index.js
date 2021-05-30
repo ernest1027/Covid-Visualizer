@@ -119,9 +119,9 @@ function setHeatMap(e) {
   document.getElementById("stateContent").innerHTML = '<div id="chart" class="chart"></div> ';
   let heatmapData = [];
   let content = `
-  <button class ="btn btn-secondary" id="showStats" onclick="showstatstable()">Show stats table</button>
+  <button class ="btn btn-secondary" id="showStats" onclick="showstatstable()">Hide stats table</button>
   <br></br>
-    <table id="statstable" class="table table-sm hidden">
+    <table id="statstable" class="table table-sm ">
       <thead class="thead-dark">
         <tr>
           <th scope="col">State</th>
