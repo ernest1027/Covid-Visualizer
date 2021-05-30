@@ -184,7 +184,7 @@ function vaccineSubmit(e) {
       .get(
         `https://v-map-hackon.herokuapp.com/calc?vaccine=${
           document.getElementById("vaccines").value
-        }&days=500`
+        }&days=90`
       )
       .then((response) => {
         data = response.data;
@@ -195,7 +195,7 @@ function vaccineSubmit(e) {
     //Make slider
     document.getElementById("content").innerHTML = `
         <label for="myRange" id="myRangeValue">Prediction for 0 days in the future</label>
-       <input type="range" min="0" max="499" value="0" class="form-range" id="myRange" oninput="changeRange(this.value)" onchange="setHeatMap(this.value)">
+       <input type="range" min="0" max="89" value="0" class="form-range" id="myRange" oninput="changeRange(this.value)" onchange="setHeatMap(this.value)">
        <div id=stateContent>
         <div id="chart" class="chart"></div>     
        </div> 
