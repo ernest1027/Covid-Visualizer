@@ -71,9 +71,9 @@ function setMarkers() {
 
       
       document.getElementById("totalContent").innerHTML = "";
-      axios.get("https://v-map-hackon.herokuapp.com/chart").then((data) => {
-        console.log(data.data);
-        var graphs = data.data;
+      axios.get(`https://v-map-hackon.herokuapp.com/chart?location=${marker.getLabel()}&days=${document.getElementById("myRange").value}&vaccine=${vaccine_num}`).then((response) => {
+        console.log(response.data);
+        var graphs = response.data;
         Plotly.plot("chart", graphs, {});
       });
       let e = document.getElementById("myRange").value
@@ -82,7 +82,7 @@ function setMarkers() {
       <p>Susceptible: ${data[e][state]["susceptible"]}</p>
       <p>Infected: ${data[e][state]["infected"]}</p>
       <p>Recovered: ${data[e][state]["recovered"]}</p>
-      <p>Dead: ${data[e][state]["dead"]}</p>
+      <p>Deceased: ${data[e][state]["dead"]}</p>
       <button class="btn btn-secondary" onclick="goBack()">Go Back</button>
       <br></br>
       <div id="chart" class="chart"></div>
@@ -112,7 +112,7 @@ function goBack() {
   }
   document.getElementById("stateContent").innerHTML =
     '<div id="chart" class="chart"></div> ';
-};
+}
 
 function setHeatMap(e) {
   infoWindow.close()
@@ -129,7 +129,7 @@ function setHeatMap(e) {
           <th scope="col">Infected</th>
           <th scope="col">Recovered</th>
           <th scope="col">Vaccinated</th>
-          <th scope="col">Dead</th>
+          <th scope="col">Deceased</th>
           <td>
         </tr>
       </thead>
@@ -172,13 +172,14 @@ function setHeatMap(e) {
 document
   .getElementById("vaccineForm")
   .addEventListener("submit", vaccineSubmit);
-
+let vaccine_num
 function vaccineSubmit(e) {
   e.preventDefault();
-  if (isNaN(document.getElementById("vaccines").value)) {
+  if (isNaN(document.getElementById("vaccines").value) || document.getElementById("vaccines").value === "") {
     window.alert("Please enter a number");
   } else {
     //get data from python
+    vaccine_num = document.getElementById("vaccines").value
     axios
       .get(
         `https://v-map-hackon.herokuapp.com/calc?vaccine=${
@@ -198,8 +199,7 @@ function vaccineSubmit(e) {
        <div id=stateContent>
         <div id="chart" class="chart"></div>     
        </div> 
-       <div id = totalContent> </div>
-             
+       <div id = totalContent> </div>             
        `;
   }
 }
